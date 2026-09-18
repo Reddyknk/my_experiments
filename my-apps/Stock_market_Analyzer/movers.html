@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US Market Movers — Winners & Losers Terminal</title>
+    <meta name="description" content="Top US stock market winners and losers grouped by sector, price change, and relative volume.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Top Market Ticker Ribbon -->
+    <div class="ticker-ribbon" id="tickerRibbon">
+        <div class="ticker-track" id="tickerTrack">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="app-header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="logo-text">
+                <span class="brand-title">PULSE<span class="brand-highlight">MARKET</span></span>
+                <span class="brand-subtitle">Financial Terminal v2.4</span>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+            <a href="trades.html" class="nav-link"><i class="fa-solid fa-shield-halved text-emerald"></i> Low-Risk Trades</a>
+            <a href="movers.html" class="nav-link active"><i class="fa-solid fa-fire"></i> Market Movers</a>
+            <a href="mag7.html" class="nav-link"><i class="fa-solid fa-crown text-gold"></i> Mag 7</a>
+            <a href="news.html" class="nav-link"><i class="fa-solid fa-newspaper text-cyan"></i> News Highlights</a>
+        </nav>
+
+        <div class="search-wrapper">
+            <div class="search-input-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search ticker or company (e.g. AAPL, NVDA)..." autocomplete="off">
+            </div>
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+
+        <div class="header-actions">
+            <button class="action-btn live-status-badge">
+                <span class="pulse-dot"></span>
+                <span>YFINANCE SCREENER</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="movers-page-container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1><i class="fa-solid fa-fire text-coral"></i> US Stock Market Movers</h1>
+                <p class="page-subtitle">Real-time market movers (Price > $15, Volume > 1M, RelVol = Volume / AvgVolume > 1.0)</p>
+            </div>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="filter-bar">
+            <div class="filter-controls">
+                <div class="segmented-control" id="moverTypeControl">
+                    <button class="seg-btn active" data-type="all">All Movers</button>
+                    <button class="seg-btn" data-type="winners"><i class="fa-solid fa-arrow-trend-up text-green"></i> Winners</button>
+                    <button class="seg-btn" data-type="losers"><i class="fa-solid fa-arrow-trend-down text-red"></i> Losers</button>
+                </div>
+
+                <select class="custom-select" id="sectorFilter">
+                    <option value="ALL">All Sectors</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Industrials">Industrials</option>
+                    <option value="Financials">Financials</option>
+                    <option value="Basic Materials">Basic Materials</option>
+                    <option value="Consumer Cyclical">Consumer Cyclical</option>
+                    <option value="Energy">Energy</option>
+                    <option value="Real Estate">Real Estate</option>
+                    <option value="Utilities">Utilities</option>
+                </select>
+            </div>
+
+            <div class="search-input-box" style="width: 280px;">
+                <i class="fa-solid fa-filter search-icon"></i>
+                <input type="text" id="moversTableFilter" placeholder="Filter result list...">
+            </div>
+        </div>
+
+        <!-- Table Viewport -->
+        <div class="movers-table-wrapper">
+            <table class="movers-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Ticker / Company</th>
+                        <th>Sector</th>
+                        <th>Price ($)</th>
+                        <th>Change (%)</th>
+                        <th>Volume</th>
+                        <th>Rel Vol (Vol / AvgVol)</th>
+                        <th>Floor Pivot (P)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="moversTableBody">
+                    <!-- Populated dynamically by movers.js -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>PulseMarket Terminal &copy; 2026. Data sourced via YFinance screener rules (Price > $15, Vol > 1M, RelVol = Vol / AvgVol).</p>
+    </footer>
+
+    <script src="movers.js"></script>
+</body>
+</html>

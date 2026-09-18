@@ -1,0 +1,127 @@
+# ==============================================================================
+# Agent Market Scanner Specification
+# ==============================================================================
+
+agent:
+  name: "Agent Market Scanner"
+  version: "1.0.0"
+  description: "Automated market scanner that fetches YFinance OHLCV data at market close, screens for market movers, monitors sector indices and top holdings (including the Magnificent Seven), and calculates Pivot, Support (S1-S3), and Resistance (R1-R3) levels."
+
+execution:
+  schedule:
+    mode: "cron"
+    cron_expression: "0 16 * * 1-5" # 4:00 PM EST (Market Close, Mon-Fri)
+    timezone: "America/New_York"
+    event_trigger: "market_close"
+  retry_policy:
+    max_retries: 3
+    backoff_seconds: 30
+
+data_source:
+  provider: "yfinance"
+  metrics:
+    - "Open"
+    - "High"
+    - "Low"
+    - "Close"
+    - "Volume"
+    - "AvgVolume"
+
+screening_criteria:
+  market_movers:
+    min_price: 15.00
+    min_volume: 1000000
+    volume_condition: "Volume > AvgVolume"
+    currency: "USD"
+
+target_universe:
+  sector_indices:
+    - symbol: "XLK"
+      name: "Technology Select Sector SPDR"
+      top_stocks: ["AAPL", "MSFT", "NVDA"]
+    - symbol: "XLE"
+      name: "Energy Select Sector SPDR"
+      top_stocks: ["XOM", "CVX", "COP"]
+    - symbol: "XLF"
+      name: "Financial Select Sector SPDR"
+      top_stocks: ["JPM", "BAC", "WFC"]
+    - symbol: "XLV"
+      name: "Health Care Select Sector SPDR"
+      top_stocks: ["LLY", "JNJ", "UNH"]
+    - symbol: "XLI"
+      name: "Industrial Select Sector SPDR"
+      top_stocks: ["GE", "CAT", "HON"]
+    - symbol: "XLC"
+      name: "Communication Services Select Sector SPDR"
+      top_stocks: ["GOOGL", "META", "NFLX"]
+    - symbol: "XLY"
+      name: "Consumer Discretionary Select Sector SPDR"
+      top_stocks: ["AMZN", "TSLA", "HD"]
+    - symbol: "XLP"
+      name: "Consumer Staples Select Sector SPDR"
+      top_stocks: ["PG", "KO", "PEP"]
+    - symbol: "XLU"
+      name: "Utilities Select Sector SPDR"
+      top_stocks: ["NEE", "SO", "DUK"]
+    - symbol: "XLB"
+      name: "Materials Select Sector SPDR"
+      top_stocks: ["LIN", "APD", "ECL"]
+    - symbol: "XLRE"
+      name: "Real Estate Select Sector SPDR"
+      top_stocks: ["PLD", "AMT", "EQIX"]
+
+  magnificent_seven:
+    - symbol: "AAPL"
+      name: "Apple Inc."
+    - symbol: "MSFT"
+      name: "Microsoft Corporation"
+    - symbol: "NVDA"
+      name: "NVIDIA Corporation"
+    - symbol: "AMZN"
+      name: "Amazon.com Inc."
+    - symbol: "GOOGL"
+      name: "Alphabet Inc."
+    - symbol: "META"
+      name: "Meta Platforms Inc."
+    - symbol: "TSLA"
+      name: "Tesla Inc."
+
+technical_analysis:
+  pivot_calculation:
+    formula_type: "Standard Floor Pivots"
+    pivot_point:
+      formula: "P = (High + Low + Close) / 3"
+    resistance_levels:
+      R1: "2 * P - Low"
+      R2: "P + (High - Low)"
+      R3: "High + 2 * (P - Low)"
+    support_levels:
+      S1: "2 * P - High"
+      S2: "P - (High - Low)"
+      S3: "Low - 2 * (High - P)"
+
+outputs:
+  storage:
+    file_path: "market_analysis_results.json"
+    database_export: true
+    format: "JSON"
+  notifications:
+    on_success: true
+    channels: ["log", "dashboard_websocket"]
+
+critic_agent_checklist:
+  enabled: true
+  description: "Automated validation criteria used by the Critic Agent to verify scanner outputs and market data integrity."
+  validation_steps:
+    - id: "yfinance_price_validation"
+      name: "YFinance Stock Price & Pivot Verification"
+      frequency: "post_scan"
+      output_file: "validated_yahoo_data.json"
+      checks:
+        - "Fetch live OHLCV data directly from YFinance API for all target symbols"
+        - "Cross-verify Close, Open, High, Low, and Volume against market_analysis_results.json"
+        - "Validate Relative Volume formula: RelVol = Volume / AvgVolume"
+        - "Validate Floor Pivot levels: Pivot P = (High + Low + Close) / 3, R1 = 2P - Low, S1 = 2P - High"
+        - "Format Market Cap ($T / $B / $M) and P/E ratios"
+        - "Ensure zero unicode encoding errors and exit code 0"
+

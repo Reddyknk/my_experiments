@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market Analyzer — Premium Financial Terminal</title>
+    <meta name="description" content="Real-time stock market analysis, candlestick charting, technical indicators, financial fundamentals, and AI market sentiment.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Top Market Ticker Ribbon -->
+    <div class="ticker-ribbon" id="tickerRibbon">
+        <div class="ticker-track" id="tickerTrack">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="app-header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="logo-text">
+                <span class="brand-title">PULSE<span class="brand-highlight">MARKET</span></span>
+                <span class="brand-subtitle">Financial Terminal v2.4</span>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+            <a href="trades.html" class="nav-link"><i class="fa-solid fa-shield-halved text-emerald"></i> Low-Risk Trades</a>
+            <a href="movers.html" class="nav-link"><i class="fa-solid fa-fire"></i> Market Movers</a>
+            <a href="mag7.html" class="nav-link"><i class="fa-solid fa-crown text-gold"></i> Mag 7</a>
+            <a href="news.html" class="nav-link"><i class="fa-solid fa-newspaper text-cyan"></i> News Highlights</a>
+        </nav>
+
+        <div class="search-wrapper">
+            <div class="search-input-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search ticker or company (e.g. AAPL, NVDA, TSLA)..." autocomplete="off">
+                <kbd class="search-shortcut">Ctrl K</kbd>
+            </div>
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+
+        <div class="header-actions">
+            <button class="action-btn live-status-badge">
+                <span class="pulse-dot"></span>
+                <span>LIVE MARKET CLOSE DATA</span>
+            </button>
+            <button class="action-btn icon-only" id="watchlistToggleBtn" title="Toggle Watchlist">
+                <i class="fa-solid fa-star"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Left Dashboard Column -->
+        <section class="dashboard-primary">
+            <!-- Stock Banner Hero -->
+            <div class="stock-hero-card" id="stockHero">
+                <div class="hero-header">
+                    <div class="hero-identity">
+                        <div class="hero-symbol-avatar" id="heroAvatar">AAPL</div>
+                        <div>
+                            <div class="hero-title-row">
+                                <h1 class="hero-symbol" id="heroSymbol">AAPL</h1>
+                                <span class="hero-badge" id="heroExchange">NASDAQ</span>
+                                <span class="hero-badge sector" id="heroSector">Technology</span>
+                            </div>
+                            <div class="hero-company" id="heroCompany">Apple Inc.</div>
+                        </div>
+                    </div>
+                    <div class="hero-pricing">
+                        <div class="hero-price" id="heroPrice">$326.57</div>
+                        <div class="hero-change-pill positive" id="heroChange">
+                            <i class="fa-solid fa-arrow-trend-up"></i>
+                            <span>+$11.24 (+3.56%)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-quick-stats">
+                    <div class="quick-stat">
+                        <span class="qs-label">Day Range</span>
+                        <span class="qs-val" id="heroDayRange">$316.57 - $326.68</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="qs-label">Volume</span>
+                        <span class="qs-val" id="heroVolume">69.4M</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="qs-label">Market Cap</span>
+                        <span class="qs-val" id="heroMarketCap">$4.77T</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="qs-label">52W Range</span>
+                        <span class="qs-val" id="hero52W">$215.00 - $335.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section Card -->
+            <div class="card chart-card">
+                <div class="chart-toolbar">
+                    <div class="toolbar-group">
+                        <span class="tb-label">Type:</span>
+                        <button class="tb-btn active" data-chart-type="candlestick" id="btnCandlestick">
+                            <i class="fa-solid fa-chart-simple"></i> Candlestick
+                        </button>
+                        <button class="tb-btn" data-chart-type="line" id="btnLine">
+                            <i class="fa-solid fa-chart-line"></i> Line
+                        </button>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <span class="tb-label">Timeframe:</span>
+                        <div class="segmented-control" id="timeframeControl">
+                            <button class="seg-btn" data-tf="1D">1D</button>
+                            <button class="seg-btn" data-tf="1W">1W</button>
+                            <button class="seg-btn active" data-tf="1M">1M</button>
+                            <button class="seg-btn" data-tf="6M">6M</button>
+                            <button class="seg-btn" data-tf="1Y">1Y</button>
+                            <button class="seg-btn" data-tf="ALL">ALL</button>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <span class="tb-label">Indicators:</span>
+                        <button class="indicator-chip active" data-indicator="sma" id="toggleSMA">SMA 20</button>
+                        <button class="indicator-chip" data-indicator="ema" id="toggleEMA">EMA 12</button>
+                        <button class="indicator-chip active" data-indicator="pivots" id="togglePivots">Floor Pivots</button>
+                        <button class="indicator-chip active" data-indicator="rsi" id="toggleRSI">RSI 14</button>
+                        <button class="indicator-chip active" data-indicator="volume" id="toggleVol">Volume</button>
+                    </div>
+                </div>
+
+                <!-- Canvas Viewport -->
+                <div class="canvas-wrapper">
+                    <canvas id="mainChartCanvas"></canvas>
+                    <canvas id="subChartCanvas"></canvas>
+                    <div class="chart-crosshair-tooltip" id="chartTooltip"></div>
+                </div>
+            </div>
+
+            <!-- Floor Pivot Points & Resistance / Support Levels -->
+            <div class="section-title-row">
+                <h2><i class="fa-solid fa-crosshairs text-purple"></i> Floor Pivot Points & Resistance/Support Levels</h2>
+                <span class="subtitle">Calculated at Market Close (YFinance)</span>
+            </div>
+            <div class="card pivots-card" id="pivotsContainer" style="margin-bottom: 24px;">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Critic Agent: Top 6 Asymmetric Low-Risk Trade Candidates -->
+            <div class="section-title-row">
+                <h2><i class="fa-solid fa-shield-halved text-emerald"></i> Critic Agent: Top 6 Asymmetric Low-Risk Trade Candidates</h2>
+                <span class="subtitle">Evaluated by Risk/Reward Ratio & Floor Pivots</span>
+            </div>
+            <div class="low-risk-grid" id="lowRiskContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+                <!-- Dynamically populated by app.js -->
+            </div>
+
+            <!-- Sector Indices & Top 3 Holdings Grid -->
+            <div class="section-title-row">
+                <h2><i class="fa-solid fa-layer-group text-blue"></i> Sector Indices & Top Holdings</h2>
+                <span class="subtitle">11 Sector SPDR ETFs + Magnificent 7</span>
+            </div>
+            <div class="sectors-grid" id="sectorsGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Fundamental Metrics Section -->
+            <div class="section-title-row">
+                <h2><i class="fa-solid fa-cubes"></i> Key Financial Metrics & Valuation</h2>
+                <span class="subtitle">Updated Real-Time</span>
+            </div>
+            <div class="metrics-grid" id="metricsGrid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Right Sidebar Column -->
+        <aside class="dashboard-sidebar">
+            <!-- Watchlist Card -->
+            <div class="card sidebar-card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-star text-gold"></i> Magnificent 7 & Watchlist</h3>
+                    <button class="add-wl-btn" id="addToWatchlistBtn">+ Add Current</button>
+                </div>
+                <div class="watchlist-items" id="watchlistContainer">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Market Top Movers (YFinance Screener) -->
+            <div class="card sidebar-card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-fire text-coral"></i> YFinance Market Movers</h3>
+                    <div class="mover-tabs">
+                        <button class="tab-btn active" id="tabWinners">Winners</button>
+                        <button class="tab-btn" id="tabLosers">Losers</button>
+                    </div>
+                </div>
+                <div class="movers-list" id="moversContainer">
+                    <!-- Populated dynamically -->
+                </div>
+                <div style="margin-top: 12px; text-align: center;">
+                    <a href="movers.html" style="font-size: 0.8rem; color: var(--accent-blue); text-decoration: none; font-weight: 600;">
+                        View Full Screener <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- AI Sentiment & News Feed -->
+            <div class="card sidebar-card">
+                <div class="card-header">
+                    <h3><i class="fa-solid fa-brain text-purple"></i> AI News Sentiment</h3>
+                    <span class="ai-badge">GPT-4o Scored</span>
+                </div>
+                <div class="news-feed" id="newsContainer">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>PulseMarket Terminal &copy; 2026. Data ingested via YFinance & Agent Market Scanner at Market Close.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

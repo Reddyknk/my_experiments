@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magnificent Seven — Financial Terminal</title>
+    <meta name="description" content="Dedicated analysis, real-time prices, Volume, Relative Volume, Floor Pivots, and technical metrics for the Magnificent Seven tech giants.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- Top Market Ticker Ribbon -->
+    <div class="ticker-ribbon" id="tickerRibbon">
+        <div class="ticker-track" id="tickerTrack">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="app-header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="logo-text">
+                <span class="brand-title">PULSE<span class="brand-highlight">MARKET</span></span>
+                <span class="brand-subtitle">Financial Terminal v2.4</span>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="nav-links">
+            <a href="index.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+            <a href="trades.html" class="nav-link"><i class="fa-solid fa-shield-halved text-emerald"></i> Low-Risk Trades</a>
+            <a href="movers.html" class="nav-link"><i class="fa-solid fa-fire"></i> Market Movers</a>
+            <a href="mag7.html" class="nav-link active"><i class="fa-solid fa-crown text-gold"></i> Mag 7</a>
+            <a href="news.html" class="nav-link"><i class="fa-solid fa-newspaper text-cyan"></i> News Highlights</a>
+        </nav>
+
+        <div class="search-wrapper">
+            <div class="search-input-box">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search ticker or company (e.g. AAPL, NVDA)..." autocomplete="off">
+            </div>
+            <div class="search-dropdown" id="searchDropdown"></div>
+        </div>
+
+        <div class="header-actions">
+            <button class="action-btn live-status-badge">
+                <span class="pulse-dot"></span>
+                <span>MAG 7 REAL-TIME</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="movers-page-container">
+        <div class="page-header">
+            <div class="page-title">
+                <h1><i class="fa-solid fa-crown text-gold"></i> Magnificent Seven Terminal</h1>
+                <p class="page-subtitle">Volume, Relative Volume (Vol/AvgVol), Floor Pivots, and real-time metrics for the 7 US market titans (~$23.5T Combined Market Cap)</p>
+            </div>
+        </div>
+
+        <!-- Magnificent Seven Cards Grid -->
+        <div class="mag7-grid" id="mag7CardsGrid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px;">
+            <!-- Populated dynamically by mag7.js -->
+        </div>
+
+        <!-- Comparative Matrix Table Header -->
+        <div class="section-title-row">
+            <h2><i class="fa-solid fa-table-columns text-blue"></i> Magnificent 7 Comparative Matrix</h2>
+            <span class="subtitle">Real-time Yahoo Finance Data, Volume & Pivots</span>
+        </div>
+
+        <!-- Table Viewport -->
+        <div class="movers-table-wrapper">
+            <table class="movers-table">
+                <thead>
+                    <tr>
+                        <th>Ticker / Company</th>
+                        <th>Sector</th>
+                        <th>Price ($)</th>
+                        <th>Change (%)</th>
+                        <th>Volume</th>
+                        <th>Rel Vol (Vol / AvgVol)</th>
+                        <th>Market Cap</th>
+                        <th>P/E Ratio</th>
+                        <th>Floor Pivot (P)</th>
+                        <th>Resistance (R1)</th>
+                        <th>Support (S1)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="mag7TableBody">
+                    <!-- Populated dynamically by mag7.js -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>PulseMarket Terminal &copy; 2026. Magnificent Seven analysis data validated with YFinance.</p>
+    </footer>
+
+    <script src="mag7.js"></script>
+</body>
+</html>

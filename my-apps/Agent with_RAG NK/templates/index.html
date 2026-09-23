@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent with RAG Operations Center</title>
+    <link rel="icon" type="image/gif" href="/static/images/tab-icon.gif">
+    <!-- Google Fonts & Bootstrap Icons & Chart.js -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Main App Container -->
+    <div class="app-window">
+        <!-- Top App Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <img src="/static/images/app-icon.gif" alt="App Icon" class="app-icon" onerror="this.style.display='none'">
+                <div class="brand-title">
+                    <h1>Agent <span>with RAG</span></h1>
+                    <span class="version-tag">v2.5 Enterprise</span>
+                </div>
+            </div>
+
+            <!-- Central Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-tab="chat-page">
+                    <i class="bi bi-chat-text-fill"></i> Chat & Synthesis
+                </button>
+                <button class="tab-btn" data-tab="ingestion-page">
+                    <i class="bi bi-database-fill-gear"></i> Vector DB Ingestion
+                </button>
+                <button class="tab-btn" data-tab="telemetry-page">
+                    <i class="bi bi-graph-up-arrow"></i> Telemetry
+                </button>
+                <button class="tab-btn" data-tab="audit-page">
+                    <i class="bi bi-journal-code"></i> Audit Log & Events
+                </button>
+            </nav>
+
+            <!-- Header Right Controls & Health Status -->
+            <div class="header-right">
+                <div class="status-box" id="healthStatusBox">
+                    <span class="status-indicator online"></span>
+                    <div class="status-info">
+                        <span class="status-title">Backend Status</span>
+                        <span class="status-detail" id="healthStatusText">Checking services...</span>
+                    </div>
+                </div>
+                <button class="btn-shutdown" id="btnShutdownTrigger">
+                    <i class="bi bi-power"></i> Shutdown
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body Area -->
+        <main class="app-body">
+
+            <!-- PAGE 1: CHAT & KNOWLEDGE SYNTHESIS -->
+            <section id="chat-page" class="tab-page active">
+                <div class="top-controls-bar">
+                    <div class="control-group">
+                        <label for="maxTokensInput"><i class="bi bi-sliders"></i> Max Tokens</label>
+                        <input type="number" id="maxTokensInput" value="1024" min="64" max="8192" class="form-input text-box">
+                    </div>
+                    <div class="control-group">
+                        <label for="temperatureInput"><i class="bi bi-thermometer-half"></i> Temperature</label>
+                        <input type="number" id="temperatureInput" value="0.7" min="0.0" max="2.0" step="0.1" class="form-input text-box">
+                    </div>
+                    <div class="control-group model-select-group">
+                        <label for="modelSelect"><i class="bi bi-cpu-fill"></i> LLM Model</label>
+                        <select id="modelSelect" class="form-select"></select>
+                    </div>
+                    <div class="control-group" id="customEndpointGroup" style="display: none;">
+                        <label for="customEndpointInput"><i class="bi bi-link-45deg"></i> Custom Endpoint</label>
+                        <input type="text" id="customEndpointInput" value="http://127.0.0.1:8000/v1/chat/completions" class="form-input text-box wide">
+                    </div>
+                </div>
+
+                <div class="grid-two-cards">
+                    <!-- Left Card: Chat with the Agent -->
+                    <div class="card card-chat">
+                        <div class="card-header">
+                            <h2><i class="bi bi-robot"></i> Chat with the Agent</h2>
+                            <div class="header-inputs">
+                                <div class="mini-control">
+                                    <label>Agent</label>
+                                    <select id="agentChoiceSelect" class="form-select compact">
+                                        <option value="Custom Agent" selected>Custom Agent</option>
+                                        <option value="Google ADK Agent">Google ADK Agent</option>
+                                    </select>
+                                </div>
+                                <div class="mini-control">
+                                    <label>Max Turns</label>
+                                    <input type="number" id="maxTurnsInput" value="3" min="1" max="10" class="form-input compact-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="secondary-controls-row">
+                            <div class="mini-control">
+                                <label><i class="bi bi-funnel"></i> Skill Selector</label>
+                                <select id="skillSelector" class="form-select">
+                                    <option value="Vector Store Selects" selected>Vector Store Selects</option>
+                                    <option value="LLM Selects">LLM Selects</option>
+                                </select>
+                            </div>
+                            <div class="mini-control" id="skillThresholdGroup">
+                                <label><i class="bi bi-speedometer"></i> Threshold</label>
+                                <input type="number" id="skillThresholdInput" value="0.2" step="0.05" min="0.0" max="1.0" class="form-input compact-input">
+                            </div>
+                            <div class="mini-control">
+                                <label><i class="bi bi-layers-fill"></i> Max RAG Chunks</label>
+                                <select id="maxRagChunksSelect" class="form-select compact">
+                                    <option value="3">3 Chunks</option>
+                                    <option value="5" selected>5 Chunks</option>
+                                    <option value="10">10 Chunks</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="chat-messages-container" id="chatMessages">
+                            <div class="chat-placeholder">
+                                <i class="bi bi-chat-dots"></i>
+                                <p>Ask a question to invoke the Agent, run skills, or query vector database evidence.</p>
+                            </div>
+                        </div>
+
+                        <div class="chat-input-row">
+                            <input type="text" id="chatInput" placeholder="Type your question or query here..." autocomplete="off">
+                            <button class="btn-send" id="btnSendChat">
+                                <i class="bi bi-send-fill"></i> Send
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Card: Retrieved Context Evidence -->
+                    <div class="card card-evidence">
+                        <div class="card-header">
+                            <h2><i class="bi bi-file-earmark-text-fill"></i> Retrieved Context Evidence</h2>
+                            <div class="mini-control">
+                                <label>Doc Threshold</label>
+                                <input type="number" id="docThresholdInput" value="0.3" step="0.05" min="0.0" max="1.0" class="form-input compact-input">
+                            </div>
+                        </div>
+                        <div class="evidence-scroll-area" id="evidenceScrollArea">
+                            <div class="empty-evidence">
+                                <i class="bi bi-search"></i>
+                                <p>No evidence retrieved yet. Submit a chat prompt to view matching vector scores.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- PAGE 2: VECTOR DB INGESTION -->
+            <section id="ingestion-page" class="tab-page">
+                <div class="top-controls-bar page-header-row">
+                    <div class="header-action-group">
+                        <button class="btn-secondary" id="btnUpdateSkillsDB">
+                            <i class="bi bi-arrow-repeat"></i> Update Skills Database
+                        </button>
+                        <div class="control-group">
+                            <label><i class="bi bi-box-seam"></i> Active Embedder</label>
+                            <select id="embedderSelect" class="form-select"></select>
+                        </div>
+                    </div>
+
+                    <div class="stats-counter-bar">
+                        <div class="stat-pill">
+                            <span class="stat-label">Chunks</span>
+                            <span class="stat-value" id="statChunks">0</span>
+                        </div>
+                        <div class="stat-pill">
+                            <span class="stat-label">Ingested Docs</span>
+                            <span class="stat-value" id="statDocs">0</span>
+                        </div>
+                        <div class="stat-pill">
+                            <span class="stat-label">DB Size</span>
+                            <span class="stat-value" id="statDbSize">0.0 MB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-two-cards">
+                    <!-- Left Card: Populate Vector Database -->
+                    <div class="card card-half">
+                        <div class="card-header">
+                            <h2><i class="bi bi-cloud-arrow-up-fill"></i> Populate Vector Database</h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label>Enter Web URL or Local Directory Path</label>
+                                <input type="text" id="ingestSourceInput" placeholder="https://example.com or sample_docs/" class="form-input">
+                            </div>
+
+                            <div class="preset-buttons-label">Sample Web URLs & Files:</div>
+                            <div class="preset-buttons-grid">
+                                <button class="btn-preset" data-url="sample_docs/">
+                                    <i class="bi bi-folder-fill"></i> All Sample Docs
+                                </button>
+                                <button class="btn-preset" data-url="sample_docs/agent_rag_overview.md">
+                                    <i class="bi bi-file-text"></i> Agent & RAG Overview
+                                </button>
+                                <button class="btn-preset" data-url="sample_docs/company_marketing_strategy.md">
+                                    <i class="bi bi-file-text"></i> Marketing Strategy
+                                </button>
+                                <button class="btn-preset" data-url="sample_docs/financial_report_2025.md">
+                                    <i class="bi bi-file-text"></i> Financial Report
+                                </button>
+                                <button class="btn-preset" data-url="https://en.wikipedia.org/wiki/Retrieval-augmented_generation">
+                                    <i class="bi bi-globe"></i> Wikipedia RAG
+                                </button>
+                            </div>
+
+                            <!-- Advanced Chunking Collapsible -->
+                            <details class="advanced-chunking-details">
+                                <summary><i class="bi bi-gear-fill"></i> Advanced Chunking Parameters</summary>
+                                <div class="chunking-params-grid">
+                                    <div class="mini-control">
+                                        <label>Chunk Size (chars)</label>
+                                        <input type="number" id="chunkSizeInput" value="500" min="100" max="5000" class="form-input">
+                                    </div>
+                                    <div class="mini-control">
+                                        <label>Overlap (chars)</label>
+                                        <input type="number" id="chunkOverlapInput" value="50" min="0" max="1000" class="form-input">
+                                    </div>
+                                </div>
+                            </details>
+
+                            <button class="btn-primary full-width mt-15" id="btnPopulateDB">
+                                <i class="bi bi-database-add"></i> Populate Vector Database
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right Card: Vector Storage Status -->
+                    <div class="card card-half">
+                        <div class="card-header">
+                            <h2><i class="bi bi-hdd-stack-fill"></i> Vector Storage Status</h2>
+                            <button class="btn-danger-sm" id="btnResetDB">
+                                <i class="bi bi-trash3-fill"></i> Reset DB
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <div id="ingestionProgress" class="progress-bar-box" style="display:none;">
+                                <div class="spinner"></div>
+                                <span>Ingestion in progress...</span>
+                            </div>
+
+                            <div class="doc-list-container" id="docListContainer">
+                                <div class="empty-docs">No ingested documents in vector database.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Section: Available Embedding Models -->
+                <div class="card mt-20">
+                    <div class="card-header">
+                        <h2><i class="bi bi-cpu-fill"></i> Available Embedding Models (Ollama Service)</h2>
+                    </div>
+                    <div class="embedding-models-grid" id="embeddingModelsGrid"></div>
+                </div>
+            </section>
+
+
+            <!-- PAGE 3: TELEMETRY -->
+            <section id="telemetry-page" class="tab-page">
+                <div class="top-controls-bar page-header-row">
+                    <div class="header-action-group">
+                        <div class="control-group">
+                            <label><i class="bi bi-filter"></i> Model Filter</label>
+                            <select id="telemetryModelSelect" class="form-select">
+                                <option value="All Models">All Models</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn-secondary" id="btnRefreshTelemetry">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Telemetry
+                    </button>
+                </div>
+
+                <!-- Telemetry KPI Summary Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <span class="kpi-title">Total Prompts</span>
+                        <span class="kpi-value" id="kpiPrompts">0</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Total Responses</span>
+                        <span class="kpi-value" id="kpiResponses">0</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Total Errors</span>
+                        <span class="kpi-value danger" id="kpiErrors">0</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Input Tokens</span>
+                        <span class="kpi-value" id="kpiInputTokens">0</span>
+                    </div>
+                    <div class="kpi-card">
+                        <span class="kpi-title">Output Tokens</span>
+                        <span class="kpi-value" id="kpiOutputTokens">0</span>
+                    </div>
+                </div>
+
+                <!-- Top Card: System Throughput & Token Velocity -->
+                <div class="card mt-20">
+                    <div class="card-header flex-between">
+                        <h2><i class="bi bi-activity"></i> System Throughput & Token Velocity</h2>
+                        <div class="chart-controls-group">
+                            <div class="mini-control">
+                                <label>Aggregation Interval</label>
+                                <select id="intervalSelect" class="form-select compact">
+                                    <option value="1 min">1 min</option>
+                                    <option value="15 min" selected>15 min</option>
+                                    <option value="1 hr">1 hr</option>
+                                    <option value="1 day">1 day</option>
+                                </select>
+                            </div>
+                            <div class="mini-control">
+                                <label>Time Range</label>
+                                <select id="timeRangeSelect" class="form-select compact">
+                                    <option value="Last hr">Last hr</option>
+                                    <option value="1 day" selected>1 day</option>
+                                    <option value="Week">Week</option>
+                                    <option value="Month">Month</option>
+                                    <option value="Custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="charts-grid mt-15">
+                        <div class="chart-box">
+                            <div class="chart-title">Prompts, Responses & Errors</div>
+                            <canvas id="chartCalls"></canvas>
+                        </div>
+                        <div class="chart-box">
+                            <div class="chart-title">Input & Output Tokens</div>
+                            <canvas id="chartTokens"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Card: Low-Performance Metrics -->
+                <div class="card mt-20">
+                    <div class="card-header">
+                        <h2><i class="bi bi-speedometer2"></i> Advanced Low-Level Latency Metrics</h2>
+                    </div>
+                    <div class="low-perf-grid">
+                        <div class="metric-box">
+                            <div class="m-title">Time to First Token (TTFT)</div>
+                            <div class="m-val" id="metricTTFT">120.0 ms</div>
+                            <div class="m-desc">Duration between sending prompt and receiving the very first token.</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="m-title">Inter-Token Latency (ITL)</div>
+                            <div class="m-val" id="metricITL">35.0 ms</div>
+                            <div class="m-desc">Average elapsed time between generating each subsequent token.</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="m-title">Tokens Per Second (TPS)</div>
+                            <div class="m-val" id="metricTPS">28.5 tok/s</div>
+                            <div class="m-desc">Throughput speed of model generation across server requests.</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="m-title">Time Per Output Token (TPOT)</div>
+                            <div class="m-val" id="metricTPOT">35.0 ms</div>
+                            <div class="m-desc">Total time taken to generate response divided by output tokens.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- PAGE 4: AUDIT LOG & EVENT -->
+            <section id="audit-page" class="tab-page">
+                <div class="top-controls-bar page-header-row">
+                    <div class="header-action-group">
+                        <button class="btn-secondary" id="btnRefreshAudit">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh Logs
+                        </button>
+                        <button class="btn-danger-sm" id="btnClearAuditLogs">
+                            <i class="bi bi-trash3-fill"></i> Clear Logs
+                        </button>
+                    </div>
+                    <div class="audit-stats-summary" id="auditStatsSummary">
+                        <span>Prompts: <b>0</b></span>
+                        <span>Model Calls: <b>0</b></span>
+                        <span>Embeds: <b>0</b></span>
+                        <span>Avg Latency: <b>0ms</b></span>
+                    </div>
+                </div>
+
+                <!-- Top Table: User Conversations -->
+                <div class="card mt-15">
+                    <div class="card-header">
+                        <h2><i class="bi bi-chat-square-quote-fill"></i> User Conversations (Select a row to inspect associated events)</h2>
+                    </div>
+                    <div class="table-scroll-wrapper visible-5-rows">
+                        <table class="data-table" id="conversationsTable">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp (Local)</th>
+                                    <th>Conversation ID</th>
+                                    <th>User Query</th>
+                                    <th>Agent Response</th>
+                                    <th>Agent Type</th>
+                                    <th>Events</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="6" class="text-center">No conversations recorded yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bottom Table: Events for Selected Conversation -->
+                <div class="card mt-20">
+                    <div class="card-header">
+                        <h2 id="eventsTableTitle"><i class="bi bi-list-stars"></i> Events for Conversation (Select a conversation above)</h2>
+                    </div>
+                    <div class="table-scroll-wrapper">
+                        <table class="data-table" id="eventsTable">
+                            <thead>
+                                <tr>
+                                    <th>Time & Date</th>
+                                    <th>Event Type</th>
+                                    <th>Invoker</th>
+                                    <th>Target</th>
+                                    <th>Short Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5" class="text-center">Select a conversation row to view event log sequence.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+
+    <!-- MODALS -->
+
+    <!-- Modal: Shutdown Confirmation -->
+    <div class="modal-overlay" id="shutdownModal">
+        <div class="modal-card">
+            <div class="modal-header danger-header">
+                <h3><i class="bi bi-exclamation-triangle-fill"></i> Warning: System Shutdown</h3>
+            </div>
+            <div class="modal-body">
+                <p>This action will shut down the Agent Web Application and any supporting background services launched by the app. All active users will be affected.</p>
+                <p>To confirm, type <strong>Shutdown the service</strong> in the text box below:</p>
+                <input type="text" id="shutdownConfirmInput" placeholder="Shutdown the service" class="form-input mt-10">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btnCancelShutdown">Cancel</button>
+                <button class="btn-danger" id="btnConfirmShutdown" disabled>Confirm Shutdown</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Embedder Change Warning -->
+    <div class="modal-overlay" id="embedderWarningModal">
+        <div class="modal-card">
+            <div class="modal-header danger-header">
+                <h3><i class="bi bi-exclamation-octagon-fill"></i> Warning: Vector Database Reset Required</h3>
+            </div>
+            <div class="modal-body">
+                <p>Changing the vector embedding model will render existing vector embeddings incompatible.</p>
+                <p><strong>This action will delete all document and skill vector data currently in the database!</strong></p>
+                <p>To proceed, type <strong>DELETE ALL DATA</strong> in the text box below:</p>
+                <input type="text" id="embedderConfirmInput" placeholder="DELETE ALL DATA" class="form-input mt-10">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btnCancelEmbedderChange">Cancel</button>
+                <button class="btn-danger" id="btnConfirmEmbedderDelete" disabled>Delete Data & Switch Model</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Audit Event Payload JSON Viewer -->
+    <div class="modal-overlay" id="eventDetailModal">
+        <div class="modal-card wide-modal">
+            <div class="modal-header">
+                <h3 id="eventDetailTitle"><i class="bi bi-code-square"></i> Event Payload Log Detail</h3>
+                <button class="btn-close" id="btnCloseEventModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="meta-pills-row" id="eventDetailMetaPills"></div>
+                <div class="json-viewer-box mt-15" id="eventJsonViewer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
